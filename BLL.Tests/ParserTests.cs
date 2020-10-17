@@ -60,5 +60,30 @@ namespace BLL.Tests
 
             Assert.AreEqual(expectedParseResult, parseResult);
         }
+
+        [TestMethod]
+        public void ParsesValidPackagesDescription_WithoutDependencies()
+        {
+            var lines = PrepareInputLines(
+            @"
+                1
+                A,1
+            ");
+
+            var parseResult = _parser.ParsePackagesDescription(lines);
+
+            Assert.IsNotNull(parseResult);
+            Assert.IsNotNull(parseResult.PackagesToInstall);
+            Assert.IsNotNull(parseResult.PackagesDependencies);
+
+            var expectedParseResult = new ParseResult(
+                new Package[]
+                {
+                    new Package("A", "1")
+                },
+                new PackageDependency[0]);
+
+            Assert.AreEqual(expectedParseResult, parseResult);
+        }
     }
 }

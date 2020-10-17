@@ -19,6 +19,8 @@ namespace BLL
         /// packages it contains.  First chunk should list packages to install
         /// and the second one should describe those packages dependencies.
         ///
+        /// The second chunk with packages dependencies is not required.
+        ///
         /// Example lines:
         /// <para>
         /// 2
@@ -41,8 +43,13 @@ namespace BLL
 
             try
             {
-                var packagesToInstall    = ParsePackagesToInstall    (linesQueue);
-                var packagesDependencies = ParsePackagesDependencies (linesQueue);
+                // parse packages to install chunk - it is required and should always be present
+                var packagesToInstall = ParsePackagesToInstall(linesQueue);
+
+                var packagesDependencies = new PackageDependency[0];
+                // do we have packages dependencies chunk?
+                if (linesQueue.Count > 0)
+                    packagesDependencies = ParsePackagesDependencies(linesQueue);
 
                 return new ParseResult(packagesToInstall, packagesDependencies);
             }
