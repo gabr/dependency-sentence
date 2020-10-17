@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BLL;
 
@@ -106,5 +107,42 @@ namespace BLL.Tests
 
             Assert.AreEqual(expectedParseResult, parseResult);
         }
+
+        [TestMethod]
+        public void ParsesValidPackagesDescription_Big()
+        {
+            // build a very large list of packages and dependencies
+            int count = 100000;
+            var lines = new List<string>();
+            var packages = new List<Package>();
+            var packagesDependencies = new List<PackageDependency>();
+
+            lines.Add(count.ToString());
+            for (int i = 0; i < count; i++)
+            {
+                lines.Add("A,1");
+                packages.Add(new Package("A", "1"));
+            }
+
+            lines.Add(count.ToString());
+            for (int i = 0; i < count; i++)
+            {
+                lines.Add("A,1,B,1");
+                packagesDependencies.Add(new PackageDependency(new Package("A", "1"), new [] { new Package("B", "1") }));
+            }
+
+            var parseResult = _parser.ParsePackagesDescription(lines.ToArray());
+
+            Assert.IsNotNull(parseResult);
+            Assert.IsNotNull(parseResult.PackagesToInstall);
+            Assert.IsNotNull(parseResult.PackagesDependencies);
+
+            var expectedParseResult = new ParseResult(
+                packages.ToArray(),
+                packagesDependencies.ToArray());
+
+            Assert.AreEqual(expectedParseResult, parseResult);
+        }
+
     }
 }
