@@ -10,6 +10,12 @@ namespace BLL.Tests
     [TestClass]
     public class ParserTests
     {
+        // TODO: Add tests for FormatException messages content
+        // NOTE(Arek): I could spend all day adding tests but I think it is not
+        //             necessary for recruitment process ;)  I left this TODO
+        //             comment just FYI so you know that I would test the
+        //             messages as well.
+
         private Parser _parser = null;
 
         [TestInitialize]
@@ -194,6 +200,183 @@ namespace BLL.Tests
 
             Assert.AreEqual(expectedParseResult, parseResult);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_FirstSeciont_ChungSizeIsNotANumber()
+        {
+            var lines = PrepareInputLines(
+            @"
+                N
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_FirstSeciont_WrongChunkSize_TooSmall()
+        {
+            var lines = PrepareInputLines(
+            @"
+                0
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_FirstSeciont_WrongChunkSize_LargerThenLinesCount()
+        {
+            var lines = PrepareInputLines(
+            @"
+                100
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_FirstSeciont_WrongChunkSize_LargerThenChunkSize()
+        {
+            var lines = PrepareInputLines(
+            @"
+                4
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_SecondSeciont_ChungSizeIsNotANumber()
+        {
+            var lines = PrepareInputLines(
+            @"
+                2
+                A,1
+                B,1
+                N
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_SecondSeciont_WrongChunkSize_TooSmall()
+        {
+            var lines = PrepareInputLines(
+            @"
+                2
+                A,1
+                B,1
+                0
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_SecondSeciont_WrongChunkSize_TooLarge()
+        {
+            var lines = PrepareInputLines(
+            @"
+                2
+                A,1
+                B,1
+                4
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_WrongPackageFormat()
+        {
+            var lines = PrepareInputLines(
+            @"
+                2
+                A,1,C,1
+                B,1
+                4
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_WrongNumberOfCommas()
+        {
+            var lines = PrepareInputLines(
+            @"
+                2
+                A,1
+                B,1
+                3
+                A,1,B,1,
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_EmptyLine()
+        {
+            var lines =
+                @"
+                    2
+                    A,1
+                    B,1
+                    4
+                    A,1,B,1,
+
+                    A,2,B,2
+                    C,1,B,1
+                "
+                .Split('\n')
+                .Select(l => l.Trim())
+                .ToArray();
+
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
 
     }
 }

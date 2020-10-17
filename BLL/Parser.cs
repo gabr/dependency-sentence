@@ -51,6 +51,9 @@ namespace BLL
                 if (linesQueue.Count > 0)
                     packagesDependencies = ParsePackagesDependencies(linesQueue);
 
+                if (linesQueue.Count > 0)
+                    throw new FormatException($"{linesQueue.Count} lines left after parsing - probably wrong chunks sizes");
+
                 return new ParseResult(packagesToInstall, packagesDependencies);
             }
             // we expect that exception if we exceed the queue 
@@ -116,7 +119,6 @@ namespace BLL
 
             if (int.TryParse(line, out chunkSize) == false)
                 throw new FormatException("Expected number");
-
 
             // if we got it correctly then we parse and
             // return each line as array of packages
