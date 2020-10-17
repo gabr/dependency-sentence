@@ -203,6 +203,23 @@ namespace BLL.Tests
 
         [TestMethod]
         [ExpectedException(typeof(FormatException))]
+        public void ThrowsOnInvalidPackagesDescriptionFormat_NegativeChunkSize()
+        {
+            var lines = PrepareInputLines(
+            @"
+                -1
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
+            var parseResult = _parser.ParsePackagesDescription(lines);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
         public void ThrowsOnInvalidPackagesDescriptionFormat_FirstSeciont_ChungSizeIsNotANumber()
         {
             var lines = PrepareInputLines(

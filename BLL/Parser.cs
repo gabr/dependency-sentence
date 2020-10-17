@@ -120,6 +120,9 @@ namespace BLL
             if (int.TryParse(line, out chunkSize) == false)
                 throw new FormatException("Expected number");
 
+            if (chunkSize < 0)
+                throw new FormatException($"Given chunk size is negative: {chunkSize}");
+
             // if we got it correctly then we parse and
             // return each line as array of packages
             for (int i = 0; i < chunkSize; i++)
