@@ -3,12 +3,15 @@ using System.Linq;
 
 namespace BLL
 {
+    /// <summary>
+    /// Represents a single package in its specific version.
+    /// </summary>
     public class Package
     {
         public string Name    { get; }
         public string Version { get; }
 
-        private Package(
+        public Package(
             string name,
             string version
         ) {
@@ -19,17 +22,23 @@ namespace BLL
             Version = version.Trim();
         }
 
-        public override bool Equals(object obj)
+        public static bool Equals(Package left, Package right)
         {
-            var val = obj as Package;
+            if ((object)left == (object)right)
+                return true;
 
-            if (val == null)
+            if ((object)left == null || (object)right == null)
                 return false;
 
             return
-                Name    == val.Name &&
-                Version == val.Version;
+                left.Name    == right.Name &&
+                left.Version == right.Version;
         }
+
+        public static bool operator == (Package left, Package right) => Package.Equals(left, right);
+        public static bool operator != (Package left, Package right) => !Package.Equals(left, right);
+
+        public override bool Equals(object obj) => Package.Equals(this, obj as Package);
 
         public override int GetHashCode()
         {

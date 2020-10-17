@@ -3,12 +3,17 @@ using System.Linq;
 
 namespace BLL
 {
+    /// <summary>
+    /// Represents package dependencies.
+    /// Single package in specific version may require other packages in
+    /// specific versions and this class allows to represent such relation.
+    /// </summary>
     public class PackageDependency
     {
         public Package   Package      { get; }
         public Package[] Dependencies { get; }
 
-        private PackageDependency(
+        public PackageDependency(
             Package   package,
             Package[] dependencies
         ) {
@@ -19,18 +24,24 @@ namespace BLL
             Dependencies = dependencies;
         }
 
-        public override bool Equals(object obj)
+        public static bool Equals(PackageDependency left, PackageDependency right)
         {
-            var val = obj as PackageDependency;
+            if ((object)left == (object)right)
+                return true;
 
-            if (val == null)
+            if ((object)left == null || (object)right == null)
                 return false;
 
             return
-                Package             == val.Package             &&
-                Dependencies.Length == val.Dependencies.Length &&
-                Dependencies.SequenceEqual(val.Dependencies);
+                left.Package             == right.Package             &&
+                left.Dependencies.Length == right.Dependencies.Length &&
+                left.Dependencies.SequenceEqual(right.Dependencies);
         }
+
+        public static bool operator == (PackageDependency left, PackageDependency right) => PackageDependency.Equals(left, right);
+        public static bool operator != (PackageDependency left, PackageDependency right) => !PackageDependency.Equals(left, right);
+
+        public override bool Equals(object obj) => PackageDependency.Equals(this, obj as PackageDependency);
 
         public override int GetHashCode()
         {

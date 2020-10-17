@@ -3,63 +3,56 @@ using System.Linq;
 
 namespace BLL
 {
+    /// <summary>
+    /// Represents result of parsing packages description.
+    /// Such description consists of packages which have to be installed and
+    /// list of this packages dependencies.
+    ///
+    /// This class does not guaranties the description to be valid.  It allows
+    /// to store all possible descriptions: valid and invalid ones.
+    /// </summary>
     public class ParseResult
     {
-        public ParseSyntaxError    SyntaxError          { get; private set; }
         public Package[]           PackagesToInstall    { get; private set; }
         public PackageDependency[] PackagesDependencies { get; private set; }
 
-        private ParseResult() { }
-
-        public static ParseResult FromSyntaxError(ParseSyntaxError error)
-        {
-            if (error == null) throw new ArgumentNullException(nameof(error));
-
-            return new ParseResult()
-            {
-                SyntaxError          = error,
-                PackagesToInstall    = null,
-                PackagesDependencies = null
-            };
-        }
-
-        public static ParseResult FromPackages(
-            Package[]           toInstall,
-            PackageDependency[] dependencies
+        public ParseResult(
+            Package[]           packagesToInstall,
+            PackageDependency[] packagesDependencies
         ) {
-            if (toInstall    == null) throw new ArgumentNullException(nameof(toInstall));
-            if (dependencies == null) throw new ArgumentNullException(nameof(dependencies));
+            if (packagesToInstall    == null) throw new ArgumentNullException(nameof(packagesToInstall));
+            if (packagesDependencies == null) throw new ArgumentNullException(nameof(packagesDependencies));
 
-            return new ParseResult()
-            {
-                SyntaxError          = null,
-                PackagesToInstall    = toInstall,
-                PackagesDependencies = dependencies
-            };
+            PackagesToInstall    = packagesToInstall;
+            PackagesDependencies = packagesDependencies;
         }
 
-        public override bool Equals(object obj)
+        public static bool Equals(ParseResult left, ParseResult right)
         {
-            var val = obj as ParseResult;
+            if ((object)left == (object)right)
+                return true;
 
-            if (val == null)
+            if ((object)left == null || (object)right == null)
                 return false;
 
             return
-                SyntaxError                 == val.SyntaxError            &&
                 // first check just the lengths
-                PackagesToInstall.Length    == val.PackagesToInstall.Length    &&
-                PackagesDependencies.Length == val.PackagesDependencies.Length &&
+                left.PackagesToInstall.Length    == right.PackagesToInstall.Length    &&
+                left.PackagesDependencies.Length == right.PackagesDependencies.Length &&
                 // if lengths are equal then we have to check whole sequences
-                PackagesToInstall.SequenceEqual(val.PackagesToInstall)        &&
-                PackagesDependencies.SequenceEqual(val.PackagesDependencies);
+                left.PackagesToInstall.SequenceEqual(right.PackagesToInstall)         &&
+                left.PackagesDependencies.SequenceEqual(right.PackagesDependencies);
         }
+
+        public static bool operator == (ParseResult left, ParseResult right) => ParseResult.Equals(left, right);
+        public static bool operator != (ParseResult left, ParseResult right) => !ParseResult.Equals(left, right);
+
+        public override bool Equals(object obj) => ParseResult.Equals(this, obj as ParseResult);
 
         public override int GetHashCode()
         {
             return new
             {
-                SyntaxError,
                 PackagesToInstall,
                 PackagesDependencies
             }.GetHashCode();
@@ -67,11 +60,8 @@ namespace BLL
 
         public override string ToString()
         {
-            if (SyntaxError != null)
-                return SyntaxError.ToString();
-            else
-                return $"PackagesToInstall ({PackagesToInstall.Length}): [{string.Join(", ", (object[])PackagesToInstall)}], " +
-                       $"PackagesDependencies ({PackagesDependencies.Length}): [{string.Join(", ", (object[])PackagesDependencies)}]";
+            return $"PackagesToInstall ({PackagesToInstall.Length}): [{string.Join(", ", (object[])PackagesToInstall)}], " +
+                   $"PackagesDependencies ({PackagesDependencies.Length}): [{string.Join(", ", (object[])PackagesDependencies)}]";
         }
     }
 }

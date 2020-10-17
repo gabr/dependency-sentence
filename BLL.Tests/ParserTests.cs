@@ -16,52 +16,49 @@ namespace BLL.Tests
             _parser = new Parser();
         }
 
+        private string[] PrepareInputLines(string text)
+        {
+            return text
+                .Split('\n')
+                .Select(l => l.Trim())
+                .Where(l => l != "")
+                .ToArray();
+        }
+
         [TestMethod]
         public void ParsesValidPackagesDescription()
         {
-            var parseResult = _parser.ParsePackagesDescription(@"
-                    2
-                    A,1
-                    B,1
-                    3
-                    A,1,B,1
-                    A,2,B,2
-                    C,1,B,1
-                ".Split('\n'));
+            var lines = PrepareInputLines(
+            @"
+                2
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+            ");
 
-            Assert.IsNull(parseResult.SyntaxError);
+            var parseResult = _parser.ParsePackagesDescription(lines);
+
+            Assert.IsNotNull(parseResult);
             Assert.IsNotNull(parseResult.PackagesToInstall);
             Assert.IsNotNull(parseResult.PackagesDependencies);
 
-            Assert.AreEqual(2, parseResult.PackagesToInstall.Length);
-            Assert.AreEqual(3, parseResult.PackagesDependencies.Length);
+            var expectedParseResult = new ParseResult(
+                new Package[]
+                {
+                    new Package("A", "1"),
+                    new Package("B", "1")
+                },
+                new PackageDependency[]
+                {
+                    new PackageDependency(new Package("A", "1"), new [] { new Package("B", "1") }),
+                    new PackageDependency(new Package("A", "2"), new [] { new Package("B", "2") }),
+                    new PackageDependency(new Package("C", "1"), new [] { new Package("B", "1") })
+                });
 
-
-            Assert.AreEqual("A", parseResult.PackagesToInstall[0].Name);
-            Assert.AreEqual("1", parseResult.PackagesToInstall[0].Version);
-
-            Assert.AreEqual("B", parseResult.PackagesToInstall[1].Name);
-            Assert.AreEqual("1", parseResult.PackagesToInstall[1].Version);
-
-
-            Assert.AreEqual("A", parseResult.PackagesDependencies[0].Package.Name);
-            Assert.AreEqual("1", parseResult.PackagesDependencies[0].Package.Version);
-            Assert.AreEqual(1,   parseResult.PackagesDependencies[0].Dependencies.Length);
-            Assert.AreEqual("B", parseResult.PackagesDependencies[0].Dependencies[0].Name);
-            Assert.AreEqual("1", parseResult.PackagesDependencies[0].Dependencies[0].Version);
-
-            Assert.AreEqual("A", parseResult.PackagesDependencies[0].Package.Name);
-            Assert.AreEqual("2", parseResult.PackagesDependencies[0].Package.Version);
-            Assert.AreEqual(1,   parseResult.PackagesDependencies[0].Dependencies.Length);
-            Assert.AreEqual("B", parseResult.PackagesDependencies[0].Dependencies[0].Name);
-            Assert.AreEqual("2", parseResult.PackagesDependencies[0].Dependencies[0].Version);
-
-            Assert.AreEqual("C", parseResult.PackagesDependencies[0].Package.Name);
-            Assert.AreEqual("1", parseResult.PackagesDependencies[0].Package.Version);
-            Assert.AreEqual(1,   parseResult.PackagesDependencies[0].Dependencies.Length);
-            Assert.AreEqual("B", parseResult.PackagesDependencies[0].Dependencies[0].Name);
-            Assert.AreEqual("2", parseResult.PackagesDependencies[0].Dependencies[0].Version);
+            Assert.AreEqual(expectedParseResult, parseResult);
         }
-
     }
 }
