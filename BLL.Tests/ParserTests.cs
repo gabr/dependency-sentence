@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -129,6 +130,56 @@ namespace BLL.Tests
             {
                 lines.Add("A,1,B,1");
                 packagesDependencies.Add(new PackageDependency(new Package("A", "1"), new [] { new Package("B", "1") }));
+            }
+
+            var parseResult = _parser.ParsePackagesDescription(lines.ToArray());
+
+            Assert.IsNotNull(parseResult);
+            Assert.IsNotNull(parseResult.PackagesToInstall);
+            Assert.IsNotNull(parseResult.PackagesDependencies);
+
+            var expectedParseResult = new ParseResult(
+                packages.ToArray(),
+                packagesDependencies.ToArray());
+
+            Assert.AreEqual(expectedParseResult, parseResult);
+        }
+
+        [TestMethod]
+        public void ParsesValidPackagesDescription_LongLines()
+        {
+            // build a input with very long lines
+            int linesCount = 10;
+            int dependenciesCount = 100000;
+            var lines = new List<string>();
+            var packages = new List<Package>();
+            var packagesDependencies = new List<PackageDependency>();
+
+            lines.Add(linesCount.ToString());
+            for (int i = 0; i < linesCount; i++)
+            {
+                lines.Add("A,1");
+                packages.Add(new Package("A", "1"));
+            }
+
+            var sb = new StringBuilder();
+            var dependencyPackages = new List<Package>();
+            sb.Append("A,1,");
+            for (int i = 0; i < dependenciesCount; i++)
+            {
+                sb.Append("A,1,");
+                dependencyPackages.Add(new Package("A", "1"));
+            }
+            sb.Remove(sb.Length - 1, 1);
+
+            var dependenciesLine = sb.ToString();
+            var packageDependency = new PackageDependency(new Package("A", "1"), dependencyPackages.ToArray());
+
+            lines.Add(linesCount.ToString());
+            for (int i = 0; i < linesCount; i++)
+            {
+                lines.Add(dependenciesLine);
+                packagesDependencies.Add(packageDependency);
             }
 
             var parseResult = _parser.ParsePackagesDescription(lines.ToArray());
