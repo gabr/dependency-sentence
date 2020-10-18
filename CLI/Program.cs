@@ -88,9 +88,11 @@ Options:
 
         private static bool HandleHelpOption(string option)
         {
-            bool showHelp = option == "/?" ||
-                            option == "-?" ||
-                            option == "-h" ||
+            bool showHelp = option == "/?"  ||
+                            option == "-?"  ||
+                            option == "-h"  ||
+                            // this is common error so we will handle it
+                            option == "--h" ||
                             option == "--help";
 
             if (showHelp == false)
@@ -103,7 +105,9 @@ Options:
 
         private static bool HandleVersionOption(string option)
         {
-            bool showVersion = option == "-v" ||
+            bool showVersion = option == "-v"  ||
+                               // this is common error so we will handle it
+                               option == "--v" ||
                                option == "--version";
 
             if (showVersion == false)
