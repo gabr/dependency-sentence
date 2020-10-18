@@ -43,15 +43,25 @@ namespace BLL
 
             try
             {
+                // find first non empty line
+                MoveToTheFirstNonEmptyLine(linesQueue);
+
                 // parse packages to install chunk - it is required and should always be present
                 var packagesToInstall = ParsePackagesToInstall(linesQueue);
 
                 var packagesDependencies = new PackageDependency[0];
                 // do we have packages dependencies chunk?
                 if (linesQueue.Count > 0)
-                    packagesDependencies = ParsePackagesDependencies(linesQueue);
+                {
+                    // find next non empty line
+                    MoveToTheFirstNonEmptyLine(linesQueue);
 
-                if (linesQueue.Count > 0)
+                    // then parse next chunk of data
+                    packagesDependencies = ParsePackagesDependencies(linesQueue);
+                }
+
+                // if some non empty lines left there is probably an error in chunk size
+                if (linesQueue.Count > 0 && linesQueue.Any(l => l.Trim() != ""))
                     throw new FormatException($"{linesQueue.Count} lines left after parsing - probably wrong chunks sizes");
 
                 return new ParseResult(packagesToInstall, packagesDependencies);
@@ -67,6 +77,17 @@ namespace BLL
                 string line = lines[errorLine - 1];
                 throw new FormatException($"Parse error at line {errorLine}: '{fex.Message}', line: '{line}'", fex);
             }
+        }
+
+        /// <summary>
+        /// Removes empty lines from the given linesQueue until the first non
+        /// empty line is found.  The first found non empty line is not removed
+        /// from the queue and stays there to be used.
+        /// </summary>
+        private void MoveToTheFirstNonEmptyLine(Queue<string> linesQueue)
+        {
+            while (linesQueue.Count > 0 && linesQueue.Peek() == "")
+                linesQueue.Dequeue();
         }
 
         /// <summary>
