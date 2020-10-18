@@ -30,15 +30,10 @@ namespace BLL
                 packagesToInstall,
                 packagesDependencies);
 
-            // now we have unique list of packages with their versions,
-            // so if we group by name we will reveal if more then one
-            // version of given package is required to install
-            var groupedByName = allPackagesToInstall
-                .GroupBy(p => p.Name);
+            if (HasTheSamePackageInDifferentVersions(allPackagesToInstall))
+                return false;
 
-            // all packages can have only single version requested to install
-            // if not the configuration is invalid
-            return groupedByName.All(g => g.Count() == 1);
+            return true;
         }
 
         /// <summary>
@@ -101,6 +96,20 @@ namespace BLL
             }
 
             return packagesSet;
+        }
+
+        /// <summary>
+        /// Checks if in given set of packages there is
+        /// at least one with two different versions.
+        /// </summary>
+        private bool HasTheSamePackageInDifferentVersions(HashSet<Package> packages)
+        {
+            // we have unique list of packages with their versions, so if we
+            // group by name we will reveal if more then one version of given
+            // package is required to install
+            return packages
+                .GroupBy(p => p.Name)
+                .Any(g => g.Count() > 1);
         }
     }
 }
