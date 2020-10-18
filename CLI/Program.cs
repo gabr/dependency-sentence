@@ -10,9 +10,10 @@ namespace CLI
         {
             OK             = 0,
             MissingOption  = 1,
-            TooManyOptions = 1,
-            EmptyOption    = 1,
-            UnknownOption  = 1,
+            TooManyOptions = 2,
+            EmptyOption    = 3,
+            FileNotFound   = 4,
+            UnknownOption  = 5,
         };
 
         private const string HELP_MESSAGE = @"
