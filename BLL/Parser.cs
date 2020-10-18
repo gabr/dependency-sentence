@@ -56,7 +56,7 @@ namespace BLL
 
                 return new ParseResult(packagesToInstall, packagesDependencies);
             }
-            // we expect that exception if we exceed the queue 
+            // we expect that exception if we exceed the queue
             catch (InvalidOperationException ioex)
             {
                 throw new FormatException($"Expected next line but found nothing after {lines.Length} line", ioex);

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace BLL
 {
+    /// <summary>
+    /// Allows to validate given packages configuration.
+    /// </summary>
     public class Validator
     {
         public Validator() { }
@@ -12,6 +15,9 @@ namespace BLL
         // class through which will be possible to tell which dependencies are
         // incorrect
 
+        /// <summary>
+        /// Validates given packages to install to be a valid configuration.
+        /// </summary>
         public bool ValidateDependencies(
             Package[]           packagesToInstall,
             PackageDependency[] packagesDependencies
@@ -35,6 +41,12 @@ namespace BLL
             return groupedByName.All(g => g.Count() == 1);
         }
 
+        /// <summary>
+        /// Creates a unique set of packages to install with all their
+        /// dependencies.  Does not guarantee that the set to be a valid
+        /// configuration because the same package name but in different
+        /// versions may occur in result set.
+        /// </summary>
         private HashSet<Package> DetermineAllPackagesToInstall(
             Package[]           packagesToInstall,
             PackageDependency[] packagesDependencies
@@ -47,6 +59,11 @@ namespace BLL
             var dependenciesByPackage = new Dictionary<Package, List<Package>>();
             foreach (var dependency in packagesDependencies)
             {
+                // it is not guaranteed that each package will have only single
+                // PackageDependency entry in packagesDependencies array, example:
+                //   A1, B1
+                //   A1, C1
+
                 if (dependenciesByPackage.ContainsKey(dependency.Package) == false)
                     dependenciesByPackage.Add(dependency.Package, new List<Package>());
 
@@ -58,6 +75,8 @@ namespace BLL
             // as well.
             void addPackageDependencies(Package p)
             {
+                // if already added then ignore to
+                // avoid infinite recursion loops
                 if (dependenciesByPackage.ContainsKey(p) == false)
                     return;
 
