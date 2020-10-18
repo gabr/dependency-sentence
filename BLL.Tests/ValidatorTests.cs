@@ -194,5 +194,29 @@ namespace BLL.Tests
                         new PackageDependency(new Package("C", "1"), new [] { new Package("B", "2") })
                     }));
         }
+
+        [TestMethod]
+        public void DoesNotAcceptInvalidConfiguration_5()
+        {
+            Assert.IsFalse(
+                _validator.ValidateDependencies(
+                    new Package[]
+                    {
+                        new Package("A", "1"),
+                        new Package("B", "1")
+                    },
+                    new PackageDependency[]
+                    {
+                        new PackageDependency(new Package("A", "1"), new [] { new Package("C", "1") }),
+                        new PackageDependency(new Package("C", "1"), new [] { new Package("D", "1") }),
+                        new PackageDependency(new Package("D", "1"), new [] { new Package("E", "1") }),
+                        new PackageDependency(new Package("B", "1"), new [] { new Package("J", "1") }),
+                        new PackageDependency(new Package("B", "1"), new [] { new Package("G", "1") }),
+                        new PackageDependency(new Package("G", "1"), new [] { new Package("F", "1") }),
+                        new PackageDependency(new Package("F", "1"), new [] { new Package("E", "2") })
+                    }));
+        }
+
+
     }
 }
