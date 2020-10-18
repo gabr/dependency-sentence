@@ -169,7 +169,7 @@ Now in the newly created `publish` directory will be `CLI.exe` executable which 
 ## Design questions & decisions
 
 1. Why `.bat` scripts?  
-   As a simple form of documentation how to perform certain actions in the project.
+   As a simple form of documentation how to perform certain actions in the project.  
    They are also used by my editor to quickly build and test the projects.  
    In case of more complex automation tasks I use PowerShell scripts instead of `.bat` ones.
 2. Why `string` type for storing version of a package?  
