@@ -19,6 +19,15 @@ namespace BLL.Tests
         }
 
         [TestMethod]
+        public void AcceptsValidConfiguration_NoPackages()
+        {
+            Assert.IsTrue(
+                _validator.ValidateDependencies(
+                    new Package[0],
+                    new PackageDependency[0]));
+        }
+
+        [TestMethod]
         public void AcceptsValidConfiguration_1()
         {
             Assert.IsTrue(
@@ -116,7 +125,6 @@ namespace BLL.Tests
                     },
                     new PackageDependency[0]));
         }
-
 
         [TestMethod]
         public void DoesNotAcceptInvalidConfiguration_1()
