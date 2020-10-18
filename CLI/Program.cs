@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using BLL;
 
 namespace CLI
@@ -13,7 +14,8 @@ namespace CLI
             TooManyOptions = 2,
             EmptyOption    = 3,
             FileNotFound   = 4,
-            UnknownOption  = 5,
+            EmptyFile      = 5,
+            ParseError     = 6,
         };
 
         private const string HELP_MESSAGE = @"
@@ -26,7 +28,9 @@ Usage:
 Returns on standard output:
     PASS - When packages dependencies configuration is valid.
     FAIL - When packages dependencies configuration is invalid.
-           Fail details will be printed on standard error.
+
+Errors:
+    Parsing errors and others are printed to standard error.
 
 Options:
   <file_path>          Path to the file with dependencies description.
@@ -48,10 +52,7 @@ Options:
             if (HandleVersionOption(option))
                 return;
 
-            if (HandleFilePath(option))
-                return;
-
-            HandleUnknownOption(option);
+            HandleFilePath(option);
         }
 
         private static string HandleArgs(string[] args)
@@ -125,17 +126,46 @@ Options:
             return true;
         }
 
-        private static void HandleUnknownOption(string option)
+        private static void HandleFilePath(string path)
         {
-            Environment.ExitCode = (int)ExitCodes.UnknownOption;
-            Console.Error.WriteLine($"Unknown option: '{option}'");
-            Console.WriteLine(HELP_MESSAGE);
-        }
+            if (File.Exists(path) == false)
+            {
+                Environment.ExitCode = (int)ExitCodes.FileNotFound;
+                Console.Error.WriteLine($"File not found: ");
+                return;
+            }
 
+            // Prepare file lines, but only trim them - do not remove any!
+            // We want to have accurate line count number in the potential
+            // parsing error message.
+            string[] lines = File.ReadAllLines(path)
+                .Select(l => l.Trim())
+                .ToArray();
 
-        private static bool HandleFilePath(string option)
-        {
-            throw new NotImplementedException();
+            if (lines.Length == 0)
+            {
+                Environment.ExitCode = (int)ExitCodes.EmptyFile;
+                Console.Error.WriteLine($"Given file is empty: ");
+                return;
+            }
+
+            try
+            {
+                var parser = new Parser();
+                var parserResult = parser.ParsePackagesDescription(lines);
+
+                var validator = new Validator();
+                var areValid = validator.ValidateDependencies(
+                    parserResult.PackagesToInstall,
+                    parserResult.PackagesDependencies);
+
+                Console.WriteLine(areValid ? "PASS" : "FAIL");
+            }
+            catch (FormatException ex)
+            {
+                Environment.ExitCode = (int)ExitCodes.ParseError;
+                Console.Error.WriteLine($"Error while parsing file: '{path}'\n" + ex.Message);
+            }
         }
 
     }
