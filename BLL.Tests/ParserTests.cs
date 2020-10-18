@@ -202,6 +202,126 @@ namespace BLL.Tests
         }
 
         [TestMethod]
+        public void ParsesValidPackagesDescription_EmptyLinesAtTheBeginning()
+        {
+            var lines =
+            @"
+
+
+                2
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1"
+                .Split('\n')
+                .Select(l => l.Trim())
+                .ToArray();
+
+            var parseResult = _parser.ParsePackagesDescription(lines);
+
+            Assert.IsNotNull(parseResult);
+            Assert.IsNotNull(parseResult.PackagesToInstall);
+            Assert.IsNotNull(parseResult.PackagesDependencies);
+
+            var expectedParseResult = new ParseResult(
+                new Package[]
+                {
+                    new Package("A", "1"),
+                    new Package("B", "1")
+                },
+                new PackageDependency[]
+                {
+                    new PackageDependency(new Package("A", "1"), new [] { new Package("B", "1") }),
+                    new PackageDependency(new Package("A", "2"), new [] { new Package("B", "2") }),
+                    new PackageDependency(new Package("C", "1"), new [] { new Package("B", "1") })
+                });
+
+            Assert.AreEqual(expectedParseResult, parseResult);
+        }
+
+        [TestMethod]
+        public void ParsesValidPackagesDescription_EmptyLinesAtTheEnd()
+        {
+            var lines =
+            @"  2
+                A,1
+                B,1
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1
+
+
+
+            "
+                .Split('\n')
+                .Select(l => l.Trim())
+                .ToArray();
+
+            var parseResult = _parser.ParsePackagesDescription(lines);
+
+            Assert.IsNotNull(parseResult);
+            Assert.IsNotNull(parseResult.PackagesToInstall);
+            Assert.IsNotNull(parseResult.PackagesDependencies);
+
+            var expectedParseResult = new ParseResult(
+                new Package[]
+                {
+                    new Package("A", "1"),
+                    new Package("B", "1")
+                },
+                new PackageDependency[]
+                {
+                    new PackageDependency(new Package("A", "1"), new [] { new Package("B", "1") }),
+                    new PackageDependency(new Package("A", "2"), new [] { new Package("B", "2") }),
+                    new PackageDependency(new Package("C", "1"), new [] { new Package("B", "1") })
+                });
+
+            Assert.AreEqual(expectedParseResult, parseResult);
+        }
+
+        [TestMethod]
+        public void ParsesValidPackagesDescription_EmptyLinesBetweenChunks()
+        {
+            var lines =
+            @"  2
+                A,1
+                B,1
+
+
+                3
+                A,1,B,1
+                A,2,B,2
+                C,1,B,1"
+                .Split('\n')
+                .Select(l => l.Trim())
+                .ToArray();
+
+            var parseResult = _parser.ParsePackagesDescription(lines);
+
+            Assert.IsNotNull(parseResult);
+            Assert.IsNotNull(parseResult.PackagesToInstall);
+            Assert.IsNotNull(parseResult.PackagesDependencies);
+
+            var expectedParseResult = new ParseResult(
+                new Package[]
+                {
+                    new Package("A", "1"),
+                    new Package("B", "1")
+                },
+                new PackageDependency[]
+                {
+                    new PackageDependency(new Package("A", "1"), new [] { new Package("B", "1") }),
+                    new PackageDependency(new Package("A", "2"), new [] { new Package("B", "2") }),
+                    new PackageDependency(new Package("C", "1"), new [] { new Package("B", "1") })
+                });
+
+            Assert.AreEqual(expectedParseResult, parseResult);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(FormatException))]
         public void ThrowsOnInvalidPackagesDescriptionFormat_NegativeChunkSize()
         {
