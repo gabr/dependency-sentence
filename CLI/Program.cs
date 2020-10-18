@@ -131,7 +131,7 @@ Options:
             if (File.Exists(path) == false)
             {
                 Environment.ExitCode = (int)ExitCodes.FileNotFound;
-                Console.Error.WriteLine($"File not found: ");
+                Console.Error.WriteLine($"File not found: '{path}'");
                 return;
             }
 
@@ -145,7 +145,7 @@ Options:
             if (lines.Length == 0)
             {
                 Environment.ExitCode = (int)ExitCodes.EmptyFile;
-                Console.Error.WriteLine($"Given file is empty: ");
+                Console.Error.WriteLine($"Given file is empty: '{path}'");
                 return;
             }
 
