@@ -41,7 +41,7 @@ Options:
             if (option == null)
                 return;
 
-            if (HandleHelp(option))
+            if (HandleHelpOption(option))
                 return;
 
             if (HandleVersionOption(option))
@@ -86,7 +86,7 @@ Options:
             return option;
         }
 
-        private static bool HandleHelp(string option)
+        private static bool HandleHelpOption(string option)
         {
             bool showHelp = option == "/?" ||
                             option == "-?" ||
@@ -120,16 +120,17 @@ Options:
             return true;
         }
 
-        private static bool HandleFilePath(string option)
-        {
-            throw new NotImplementedException();
-        }
-
         private static void HandleUnknownOption(string option)
         {
             Environment.ExitCode = (int)ExitCodes.UnknownOption;
             Console.Error.WriteLine($"Unknown option: '{option}'");
             Console.WriteLine(HELP_MESSAGE);
+        }
+
+
+        private static bool HandleFilePath(string option)
+        {
+            throw new NotImplementedException();
         }
 
     }
