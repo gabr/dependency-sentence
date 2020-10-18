@@ -133,7 +133,83 @@ Now in the newly created `publish` directory will be `CLI.exe` executable which 
 
 # Design
 
-TODO
+## Project structure
+
+    │   build.bat    # builds whole solution
+    │   test.bat     # runs tests
+    │   clean.ps1    # removes build files
+    │   publish.bat  # publishes CLI.exe
+    |
+    │   dependency-sentence.sln
+    │   README.md
+    |
+    |   # Business Logic Layer
+    |   # Contains all the logic about parsing and
+    |   # validating the packages dependencies files.
+    ├───BLL
+    │       BLL.csproj
+    │       Package.cs
+    │       PackageDependency.cs
+    │       Parser.cs
+    │       ParseResult.cs
+    │       Validator.cs
+    │
+    |   # Unit tests for BLL
+    ├───BLL.Tests
+    │       BLL.Tests.csproj
+    │       ParserTests.cs
+    │       ValidatorTests.cs
+    │
+    |   # The simple command line "front-end" to the BLL library
+    └───CLI
+            CLI.csproj
+            Program.cs
+
+
+## Design questions & decisions
+
+1. Why `.bat` scripts?  
+   As a simple form of documentation how to perform certain actions in the project.
+   They are also used by my editor to quickly build and test the projects.  
+   In case of more complex automation tasks I use PowerShell scripts instead of `.bat` ones.
+2. Why `string` type for storing version of a package?  
+   In my experience the software version number are rarely **numbers**.  
+   Often they contain more then single dot or an suffix like `-alpha` etc.
+3. Why name of the package is not forced to be lower case or upper case?  
+   In my opinion the name `package` and `PACKage` are different names therefore my solution is case sensitive for packages names.
+4. Why there are no documentation comments for the methods of `Package.cs`, `PackageDependency.cs` and `ParseResult.cs`?  
+   Those classes are simple value objects and contains only well known overloaded methods and operators.
+5. Why `Parser.cs` and `Validator.cs` are classes if they do not contain any state?  Why not static classes or different solution?  
+   For now it is very simple system but when they grow there is always need to add come kind of configuration or additional dependencies to the classes.  
+   Having them as regular classes which have to be instantiated before use we have the ability to use them in dependency injection system or to add them configuration parameters like i.e. parameter to change the delimiters from commas `,` into something else in the parser.  The `Validator.cs` could have a configuration specifying which validation rules to use etc.  
+   It is easy to create static class/methods but hard to go back after system grows and multiple different instances are necessary.
+6. Why validator method `ValidateDependencies` returns simple `bool` instead of a `ValidationResult` object?  
+   I would do it like so if there was a requirement for an error message explaining why given configuration is invalid.
+   But in this current system simple `bool` is enough.  
+   I left `TODO` comment about that in the `Validator.cs` class.
+7. Why `DetermineAllPackagesToInstall()` is a function and not a separate system/class?  
+   I would for sure separate validation from determining packages to install if there was a need to actually install the packages.
+   In that case a different system would need to have that ability so I would separate those functionalities and validator would receive this functionality as a dependency in constructor.
+8. Why allowing for empty lines in files?  
+   Because you left a few in your test files.  
+   Also I think it would be to strict of a requirement to enforce no empty lines in real system.
+9. Why comma delimiter is hardcoded?  
+   I added the possibility to configure the delimiter but not commited it.  
+   The syntax given in requirements is weird because the delimiter between packages is the same as delimiter between package name and version.
+   If the format would be specified as: `A,1;B,1` I would for sure add the possibility to change to specify the separator in the parser.  
+   But the situation when the separator between packages and package name and version can be the same the completely different algorithm is required and it was much less readable therefore I reverted it to the current simpler version.  
+10. Why using `FormatException` instead of custom one?  
+    It fits perfectly the given scenario and it is always better to use well known framework exceptions then to create new ones just to have a different name in stack trace.  
+    I acctualy started with the custom parse error class but removed it (see commit dafe2df).
+11. Why merge with `squash`?  
+    So you can easily see the branches structure - command `git log --all --graph --oneline`.  
+    Also that is just my style, ofc I can addapt to Your specification.  
+12. Why this project took 2 days?  
+    It did not.  I was working on it in the span of 2 days, but only a few hours each day.
+13. Why do you handle command line arguments by hand instead of using library?  
+    The current state of libraries for command line arguments handling in .NET Core is IMO a mess.  
+    Therefore for such a simple example I handled them myself.
+
 
 [system requirements details]: https://github.com/dotnet/core/blob/master/release-notes/3.1/3.1-supported-os.md
 [.NET Core 3.1 SDK Download]: https://dotnet.microsoft.com/download/dotnet-core/3.1
