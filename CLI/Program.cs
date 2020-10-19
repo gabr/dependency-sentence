@@ -42,20 +42,22 @@ Options:
 
         private static void Main(string[] args)
         {
-            string option = HandleArgs(args);
-            if (option == null)
+            var meabyOptions = HandleArgs(args);
+            if (meabyOptions == null)
                 return;
 
-            if (HandleHelpOption(option))
+            var options = meabyOptions.Value;
+
+            if (HandleHelpOption(options.option))
                 return;
 
-            if (HandleVersionOption(option))
+            if (HandleVersionOption(options.option))
                 return;
 
-            HandleFilePath(option);
+            HandleFilePath(options.filePath);
         }
 
-        private static string HandleArgs(string[] args)
+        private static (string option, string filePath)? HandleArgs(string[] args)
         {
             // we are expecting only one argument
             if (args.Length == 0)
@@ -75,7 +77,7 @@ Options:
             }
 
 
-            string option = args[0].Trim().ToLower();
+            string option = args[0].Trim();
 
             if (option == "")
             {
@@ -85,7 +87,11 @@ Options:
                 return null;
             }
 
-            return option;
+            return (
+                option: option.ToLower(),
+                // file path is just an option but without ToLower
+                filePath: option
+            );
         }
 
         private static bool HandleHelpOption(string option)
